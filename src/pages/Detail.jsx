@@ -112,7 +112,7 @@ const Detail = () => {
                         {episodes.map((ep, idx) => (
                             <Link
                                 key={idx}
-                                to={`/watch/${ep.url}`}
+                                to={`/watch/${slug}/${ep.url}`}
                                 className="btn"
                                 style={{
                                     background: 'var(--bg-card)',

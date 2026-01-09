@@ -77,6 +77,58 @@
     letter-spacing: 0.5px;
 }
 
+/* Description Overlay - New Feature */
+.description-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.95) 0%,
+            rgba(0, 0, 0, 0.8) 70%,
+            rgba(0, 0, 0, 0) 100%);
+    padding: 16px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 4;
+    max-height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+}
+
+.anime-card:hover .description-overlay {
+    transform: translateY(0);
+}
+
+.description-content {
+    width: 100%;
+    color: white;
+}
+
+.description-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+    color: var(--accent-primary);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.description-text {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
 /* Card Content */
 .card-content {
     padding: 12px;
@@ -97,6 +149,7 @@
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     transition: color 0.2s ease;
@@ -119,5 +172,20 @@
     .episode-badge {
         font-size: 0.65rem;
         padding: 4px 8px;
+    }
+
+    .description-title {
+        font-size: 0.85rem;
+    }
+
+    .description-text {
+        font-size: 0.7rem;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+    }
+
+    /* Mobile: Show description on tap/touch */
+    .anime-card:active .description-overlay {
+        transform: translateY(0);
     }
 }

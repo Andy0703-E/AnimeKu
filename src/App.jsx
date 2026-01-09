@@ -19,7 +19,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/detail/:slug" element={<Detail />} />
           <Route path="/anime/movie" element={<MoviePage />} />
-          <Route path="/watch/:slug" element={<Watch />} />
+          <Route path="/watch/:animeSlug/:episodeSlug" element={<Watch />} />
         </Routes>
       </div>
       <Footer />
