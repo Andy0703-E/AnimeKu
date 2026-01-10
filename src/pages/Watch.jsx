@@ -27,6 +27,14 @@ const Watch = () => {
                 setAnimeData(data);
 
                 const eps = data?.chapter || data?.episode_list || [];
+
+                // Sort episodes in ascending order (Episode 1, 2, 3...)
+                eps.sort((a, b) => {
+                    const epA = parseFloat(a.episode || a.ch || 0);
+                    const epB = parseFloat(b.episode || b.ch || 0);
+                    return epA - epB;
+                });
+
                 setEpisodes(eps);
 
                 // Find current episode index
