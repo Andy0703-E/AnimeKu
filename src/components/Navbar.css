@@ -180,4 +180,33 @@
         width: 100%;
         min-width: auto;
     }
+
+    .nav-donation {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* Donation Button in Navbar */
+.nav-donation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--accent-primary);
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: var(--radius-full);
+    font-weight: 700 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(255, 59, 105, 0.3);
+}
+
+.nav-donation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 59, 105, 0.4);
+    filter: brightness(1.1);
+}
+
+.nav-donation::after {
+    display: none !important;
 }

@@ -1,8 +1,10 @@
 import React from 'react';
+import { Heart } from 'lucide-react';
+
 
 const Footer = () => {
     return (
-        <footer style={{
+        <footer id="donation" style={{
             padding: '48px 24px',
             background: 'var(--bg-secondary)',
             marginTop: '80px',
@@ -19,16 +21,18 @@ const Footer = () => {
                     marginBottom: 'var(--spacing-md)',
                     color: 'var(--text-primary)'
                 }}>
-                    Anime<span style={{ color: 'var(--accent-primary)' }}>Kita</span>
+                    Anime<span style={{ color: 'var(--accent-primary)' }}>Ku</span>
                 </div>
+
 
                 <p style={{
                     color: 'var(--text-secondary)',
                     marginBottom: 'var(--spacing-sm)',
                     fontSize: '0.9rem'
                 }}>
-                    &copy; {new Date().getFullYear()} AnimeKita - By Andi Agung
+                    &copy; {new Date().getFullYear()} AnimeKu - By Andi Agung
                 </p>
+
 
                 <p style={{
                     color: 'var(--text-muted)',

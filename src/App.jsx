@@ -7,6 +7,8 @@ import Detail from './pages/Detail';
 import SearchPage from './pages/Search';
 import MoviePage from './pages/Movie';
 import Watch from './pages/Watch';
+import Donation from './pages/Donation';
+
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/detail/:slug" element={<Detail />} />
           <Route path="/anime/movie" element={<MoviePage />} />
+          <Route path="/donasi" element={<Donation />} />
           <Route path="/watch/:animeSlug/:episodeSlug" element={<Watch />} />
+
         </Routes>
       </div>
       <Footer />

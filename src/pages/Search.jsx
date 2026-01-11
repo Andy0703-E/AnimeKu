@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import AnimeCard from '../components/AnimeCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useDebounce } from '../hooks/useDebounce';
 
 const SearchPage = () => {
     const [searchParams] = useSearchParams();
@@ -10,12 +11,19 @@ const SearchPage = () => {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // Debounce search query dengan 800ms delay
+    const debouncedQuery = useDebounce(query, 800);
+
     useEffect(() => {
         const doSearch = async () => {
-            if (!query) return;
+            if (!debouncedQuery) {
+                setResults([]);
+                return;
+            }
+
             setLoading(true);
             try {
-                const res = await api.searchAnime(query);
+                const res = await api.searchAnime(debouncedQuery);
                 setResults(res?.data || res || []);
             } catch (error) {
                 console.error(error);
@@ -24,7 +32,7 @@ const SearchPage = () => {
             }
         };
         doSearch();
-    }, [query]);
+    }, [debouncedQuery]);
 
     return (
         <div className="container fade-in" style={{ marginTop: '20px' }}>

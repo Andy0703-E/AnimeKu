@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, PlayCircle } from 'lucide-react';
+import { Search, Menu, X, PlayCircle, Heart } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -21,7 +21,7 @@ const Navbar = () => {
             <div className="container navbar-container">
                 <Link to="/" className="logo">
                     <PlayCircle size={32} color="var(--accent)" />
-                    <span>Anime<span className="text-accent">Kita</span></span>
+                    <span>Anime<span className="text-accent">Ku</span></span>
                 </Link>
 
                 {/* Mobile Menu Toggle */}
@@ -33,6 +33,10 @@ const Navbar = () => {
                     <Link to="/" onClick={() => setIsOpen(false)}>Home</Link>
                     <Link to="/anime/latest" onClick={() => setIsOpen(false)}>Latest</Link>
                     <Link to="/anime/movie" onClick={() => setIsOpen(false)}>Movies</Link>
+                    <Link to="/donasi" className="nav-donation" onClick={() => setIsOpen(false)}>
+                        <Heart size={18} fill="currentColor" />
+                        Donasi
+                    </Link>
 
                     <form onSubmit={handleSearch} className="search-form">
                         <input
