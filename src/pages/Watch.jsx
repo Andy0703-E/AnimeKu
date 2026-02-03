@@ -47,25 +47,40 @@ const Watch = () => {
         fetchAnimeData();
     }, [animeSlug, episodeSlug]);
 
-    // Fetch video URL
+    // Fetch video URL - Modified to handle Winbu's provider structure
     useEffect(() => {
         const fetchVideo = async () => {
             if (!episodeSlug) return;
+
             setLoading(true);
             try {
                 const res = await api.getVideo(episodeSlug);
+                const data = res?.data || res;
                 let streamLink = '';
-                const data = (res?.data && Array.isArray(res.data)) ? res.data[0] : res;
 
-                if (data && data.stream && Array.isArray(data.stream) && data.stream.length > 0) {
-                    streamLink = data.stream[0].link;
-                } else if (data && data.stream_link) {
-                    streamLink = data.stream_link;
+                if (data?.stream && Array.isArray(data.stream) && data.stream.length > 0) {
+                    // API returns direct array of streams: [ { link: "...", reso: "..." }, ... ]
+                    // Try to find preferred providers (Blogger, Mp4Upload, etc.) based on URL or logic
+                    const preferred = data.stream.find(s =>
+                        s.link && (
+                            s.link.toLowerCase().includes('blogger') ||
+                            s.link.toLowerCase().includes('mp4upload') ||
+                            s.link.toLowerCase().includes('animekita') // Common reliable host
+                        )
+                    );
+
+                    const selectedStream = preferred || data.stream[0];
+                    streamLink = selectedStream?.link || '';
+                }
+
+                // Ensure protocol is present
+                if (streamLink && streamLink.startsWith('//')) {
+                    streamLink = `https:${streamLink}`;
                 }
 
                 setVideoUrl(streamLink);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching video:', error);
             } finally {
                 setLoading(false);
             }
@@ -171,18 +186,30 @@ const Watch = () => {
                     }}>
                         {videoUrl ? (
                             <>
-                                <video
-                                    ref={videoRef}
-                                    src={videoUrl}
-                                    controls
-                                    width="100%"
-                                    height="100%"
-                                    autoPlay={false}
-                                    onEnded={handleVideoEnded}
-                                    onError={(e) => console.log('Video Error:', e)}
-                                >
-                                    Browser Anda tidak mendukung tag video.
-                                </video>
+                                {videoUrl.includes('streaming.php') || videoUrl.includes('embed') || videoUrl.includes('iframe') ? (
+                                    <iframe
+                                        src={videoUrl}
+                                        width="100%"
+                                        height="100%"
+                                        frameBorder="0"
+                                        allowFullScreen
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        style={{ border: 'none' }}
+                                    ></iframe>
+                                ) : (
+                                    <video
+                                        ref={videoRef}
+                                        src={videoUrl}
+                                        controls
+                                        width="100%"
+                                        height="100%"
+                                        autoPlay={false}
+                                        onEnded={handleVideoEnded}
+                                        onError={(e) => console.log('Video Error:', e)}
+                                    >
+                                        Browser Anda tidak mendukung tag video.
+                                    </video>
+                                )}
 
                                 {/* Autoplay countdown overlay */}
                                 {showAutoplayNotice && countdown !== null && (

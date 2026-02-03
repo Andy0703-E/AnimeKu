@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.sansekai.my.id/api';
+const BASE_URL = 'https://andyapi-production.up.railway.app';
 
 // Cache configuration (TTL in milliseconds)
 const CACHE_TTL = {
@@ -10,6 +10,8 @@ const CACHE_TTL = {
   MOVIE: 30 * 60 * 1000,         // 30 menit - data jarang berubah
 };
 
+const CACHE_VERSION = 'v2'; // Increment this to force clear cache
+
 // Request queue untuk rate limiting
 let requestQueue = [];
 let isProcessingQueue = false;
@@ -18,7 +20,7 @@ const REQUEST_DELAY = 500; // 500ms delay antar request
 // ===== CACHE MANAGEMENT =====
 const getCachedData = (key) => {
   try {
-    const cached = localStorage.getItem(`anime_cache_${key}`);
+    const cached = localStorage.getItem(`anime_cache_${CACHE_VERSION}_${key}`);
     if (!cached) return null;
 
     const { data, timestamp, ttl } = JSON.parse(cached);
@@ -47,7 +49,7 @@ const setCachedData = (key, data, ttl) => {
       timestamp: Date.now(),
       ttl,
     };
-    localStorage.setItem(`anime_cache_${key}`, JSON.stringify(cacheData));
+    localStorage.setItem(`anime_cache_${CACHE_VERSION}_${key}`, JSON.stringify(cacheData));
     console.log(`💾 Cached: ${key} (TTL: ${ttl / 60000} menit)`);
   } catch (error) {
     // Handle localStorage quota exceeded
@@ -56,7 +58,7 @@ const setCachedData = (key, data, ttl) => {
       clearOldCache();
       // Try again
       try {
-        localStorage.setItem(`anime_cache_${key}`, JSON.stringify({ data, timestamp: Date.now(), ttl }));
+        localStorage.setItem(`anime_cache_${CACHE_VERSION}_${key}`, JSON.stringify({ data, timestamp: Date.now(), ttl }));
       } catch (e) {
         console.error('Failed to cache even after cleanup:', e);
       }
@@ -154,13 +156,29 @@ const fetchWithRetry = async (endpoint, retries = 3, backoff = 1000) => {
 
       // Check content type
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("API returned non-JSON:", contentType);
+      const text = await response.text();
+
+      // Try to parse JSON directly first
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        // If simple parse fails, try to find JSON object/array in the text
+        // This handles cases where PHP warnings are prepended to the JSON
+        const jsonStartIndex = text.search(/[{\[]/);
+        if (jsonStartIndex !== -1) {
+          try {
+            const cleanText = text.substring(jsonStartIndex);
+            return JSON.parse(cleanText);
+          } catch (e2) {
+            console.error(`Failed to parse cleaned JSON from ${endpoint}:`, e2);
+            console.error("Original text:", text);
+            return null;
+          }
+        }
+
+        console.error(`API returned non-JSON from ${endpoint}:`, text.substring(0, 100));
         return null;
       }
-
-      const data = await response.json();
-      return data;
 
     } catch (error) {
       console.error(`Error fetching ${endpoint} (attempt ${i + 1}/${retries}):`, error);
@@ -188,7 +206,17 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const data = await fetchWithRetry('/anime/latest');
+      // Using AndyApi latest
+      const res = await fetchWithRetry('/api/anime/latest');
+      let data = null;
+
+      if (Array.isArray(res)) {
+        data = res;
+      } else if (res?.data) {
+        // Fallback in case structure changes
+        data = res.data;
+      }
+
       if (data) {
         setCachedData(cacheKey, data, CACHE_TTL.LATEST);
       }
@@ -202,7 +230,16 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const data = await fetchWithRetry('/anime/recommended');
+      // Using AndyApi recommended
+      const res = await fetchWithRetry('/api/anime/recommended');
+      let data = null;
+
+      if (Array.isArray(res)) {
+        data = res;
+      } else if (res?.data) {
+        data = res.data;
+      }
+
       if (data) {
         setCachedData(cacheKey, data, CACHE_TTL.RECOMMENDED);
       }
@@ -216,11 +253,15 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const res = await fetchWithRetry(`/anime/search?query=${encodeURIComponent(query)}`);
+      // Using AndyApi search
+      const res = await fetchWithRetry(`/api/anime/search?query=${encodeURIComponent(query)}`);
       let result = [];
 
-      if (res?.data?.[0]?.result) {
-        result = res.data[0].result;
+      if (res?.data?.result) {
+        result = res.data.result;
+      } else if (res?.data) {
+        // Fallback
+        result = res.data;
       }
 
       if (result.length > 0) {
@@ -237,7 +278,19 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const data = await fetchWithRetry(`/anime/detail?urlId=${slug}`);
+      // Using AndyApi detail
+      // Note: Endpoint requires ?urlId=...
+      const res = await fetchWithRetry(`/api/anime/detail?urlId=${slug}`);
+      let data = null;
+
+      if (res?.data && res.data.length > 0) {
+        data = res.data[0];
+        // Normalize for Detail.jsx
+        if (!data.genre && data.genres) data.genre = data.genres;
+        if (!data.cover && data.thumb) data.cover = data.thumb;
+        if (!data.chapter && data.episode_list) data.chapter = data.episode_list;
+      }
+
       if (data) {
         setCachedData(cacheKey, data, CACHE_TTL.DETAIL);
       }
@@ -251,7 +304,16 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const data = await fetchWithRetry('/anime/movie');
+      // Using AndyApi movie
+      const res = await fetchWithRetry('/api/anime/movie');
+      let data = null;
+
+      if (Array.isArray(res)) {
+        data = res;
+      } else if (res?.data) {
+        data = res.data;
+      }
+
       if (data) {
         setCachedData(cacheKey, data, CACHE_TTL.MOVIE);
       }
@@ -265,7 +327,16 @@ export const api = {
     if (cached) return cached;
 
     return queueRequest(async () => {
-      const data = await fetchWithRetry(`/anime/getvideo?chapterUrlId=${slug}`);
+      // Using AndyApi getvideo
+      const res = await fetchWithRetry(`/api/anime/getvideo?chapterUrlId=${slug}`);
+      let data = null;
+
+      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+        data = res.data[0];
+      } else if (res?.data) {
+        data = res.data;
+      }
+
       if (data) {
         setCachedData(cacheKey, data, CACHE_TTL.VIDEO);
       }

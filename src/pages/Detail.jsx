@@ -73,6 +73,7 @@ const Detail = () => {
                             borderRadius: 'var(--radius-lg)',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
                         }}
+                        referrerPolicy="no-referrer"
                     />
                     <div style={{ flex: 1, minWidth: '300px' }}>
                         <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>{title}</h1>
@@ -112,7 +113,7 @@ const Detail = () => {
                         {episodes.map((ep, idx) => (
                             <Link
                                 key={idx}
-                                to={`/watch/${slug}/${ep.url}`}
+                                to={`/watch/${slug}/${ep.slug || ep.url}`}
                                 className="btn"
                                 style={{
                                     background: 'var(--bg-card)',

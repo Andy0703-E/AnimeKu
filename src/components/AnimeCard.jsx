@@ -24,16 +24,16 @@ const AnimeCard = ({ anime }) => {
     }
   */
 
-  const title = anime.judul || anime.title || anime.name || 'Unknown Title';
-  const image = anime.cover || anime.gambar || anime.image || anime.thumbnail || 'https://via.placeholder.com/300x450?text=No+Image';
-  const id = anime.url || anime.slug || anime.id || '';
-  const episode = anime.lastch || anime.episode || anime.latest_episode || '';
-  const synopsis = anime.sinopsis || anime.synopsis || anime.description || '';
+  const title = anime.judul || anime.title || anime.name || anime.name_id || 'Unknown Title';
+  const image = anime.cover || anime.gambar || anime.image || anime.thumbnail || anime.thumb || 'https://via.placeholder.com/300x450?text=No+Image';
+  const id = anime.url || anime.slug || anime.urlId || anime.id || '';
+  const episode = anime.lastch || anime.episode || anime.latest_episode || anime.current_episode || '';
+  const synopsis = anime.sinopsis || anime.synopsis || anime.description || anime.about || '';
 
   return (
     <Link to={`/detail/${id}`} className="anime-card">
       <div className="card-image-wrapper">
-        <img src={image} alt={title} loading="lazy" />
+        <img src={image} alt={title} loading="lazy" referrerPolicy="no-referrer" />
         <div className="overlay">
           <Play fill="white" size={40} />
         </div>
